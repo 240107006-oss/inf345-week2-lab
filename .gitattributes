@@ -1,0 +1,13 @@
+# Shell scripts must keep Unix line endings, whatever machine they were written on.
+#
+# Without this, a script written on Windows arrives on the Linux runner with a
+# carriage return at the end of every line, and the very first line becomes
+# "#!/usr/bin/env bash\r" - a program that does not exist. The error you get is
+# the famously unhelpful:
+#
+#     bad interpreter: /usr/bin/env bash^M: no such file or directory
+#
+# One line of configuration prevents it for all 50 of you. This is what people
+# mean by "fix the reason it was easy to break".
+*.sh text eol=lf
+*.py text eol=lf

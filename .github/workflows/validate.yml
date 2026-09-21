@@ -1,0 +1,64 @@
+# INF 345 - Week 2
+#
+# Read this file. In three weeks you will write one of these yourself.
+
+name: Mark report.sh
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  mark:
+    name: Mark submission
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Only your own folder, and nothing else in the repository.
+      - name: Check what this pull request changes
+        if: github.event_name == 'pull_request'
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          author=$(echo "$PR_AUTHOR" | tr '[:upper:]' '[:lower:]')
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)
+          echo "Files changed:"
+          echo "$changed" | sed 's/^/  /'
+
+          outside=$(echo "$changed" | grep -v "^submissions/$author/" || true)
+          if [ -n "$outside" ]; then
+            echo "::error::This pull request changes files outside submissions/$author/:"
+            echo "$outside" | sed 's/^/  /'
+            echo "::error::Week 2 adds one file: submissions/$author/report.sh"
+            exit 1
+          fi
+
+      # A seed nobody can predict. A script that hardcodes last run's answers
+      # fails here, which is the point.
+      - name: Mark it
+        env:
+          PR_AUTHOR: ${{ github.event_name == 'pull_request' && github.event.pull_request.user.login || '' }}
+        run: |
+          if [ -z "$PR_AUTHOR" ]; then
+            echo "Push to main - nothing to mark."
+            exit 0
+          fi
+          author=$(echo "$PR_AUTHOR" | tr '[:upper:]' '[:lower:]')
+          seed=$(( (RANDOM << 15) | RANDOM ))
+          echo "Marking submissions/$author/report.sh with seed $seed"
+          python3 scripts/grade.py --script "submissions/$author/report.sh" --seed "$seed"
