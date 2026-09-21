@@ -148,8 +148,8 @@ is on purpose.
 Same shape as week 1: fork, branch, commit, pull request.
 
 ```bash
-git clone https://github.com/<your-username>/week2-linux.git
-cd week2-linux
+git clone https://github.com/<your-username>/inf345-week2-lab.git
+cd inf345-week2-lab
 git checkout -b week2-<your-username>
 
 cp -r submissions/EXAMPLE submissions/<your-username>
